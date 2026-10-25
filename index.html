@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minh Triết Setup — FF Sensitivity</title>
+<style>
+  :root{
+    --bg:#0a0e14;
+    --panel:#121821;
+    --panel-2:#1a2230;
+    --accent:#00e5a0;
+    --accent-2:#ff3d5a;
+    --text:#e6edf3;
+    --muted:#8b98a9;
+    --border:#232d3d;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    background:radial-gradient(ellipse at top,#141c28 0%,var(--bg) 60%);
+    color:var(--text);min-height:100vh;padding:16px;
+    display:flex;flex-direction:column;align-items:center;
+  }
+  .wrap{width:100%;max-width:520px}
+  header{
+    text-align:center;margin:12px 0 24px;
+    animation:fadeDown .6s ease;
+  }
+  header h1{
+    font-size:1.7rem;font-weight:800;letter-spacing:.5px;
+    background:linear-gradient(90deg,var(--accent),#5ce1e6);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  header p{color:var(--muted);font-size:.85rem;margin-top:6px}
+  .card{
+    background:linear-gradient(180deg,var(--panel),var(--panel-2));
+    border:1px solid var(--border);border-radius:18px;
+    padding:20px;margin-bottom:16px;
+    box-shadow:0 8px 30px rgba(0,0,0,.45);
+    animation:fadeUp .5s ease both;
+  }
+  .card h2{
+    font-size:.8rem;text-transform:uppercase;letter-spacing:2px;
+    color:var(--accent);margin-bottom:16px;font-weight:700;
+  }
+  .row{margin-bottom:18px}
+  .row:last-child{margin-bottom:0}
+  .row-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .row-head span{font-size:.92rem;font-weight:600}
+  .val{
+    font-variant-numeric:tabular-nums;font-weight:800;font-size:1rem;
+    color:var(--accent);min-width:44px;text-align:right;
+  }
+  input[type=range]{
+    -webkit-appearance:none;width:100%;height:8px;border-radius:6px;
+    background:linear-gradient(90deg,var(--accent) 0%,var(--accent) var(--pct,50%),#2a3444 var(--pct,50%),#2a3444 100%);
+    outline:none;cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:22px;height:22px;border-radius:50%;
+    background:#fff;border:3px solid var(--accent);
+    box-shadow:0 0 12px rgba(0,229,160,.7);cursor:pointer;
+    transition:transform .15s;
+  }
+  input[type=range]::-webkit-slider-thumb:active{transform:scale(1.15)}
+  input[type=range]::-moz-range-thumb{
+    width:20px;height:20px;border-radius:50%;background:#fff;
+    border:3px solid var(--accent);cursor:pointer;
+  }
+  .presets{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+  .preset{
+    background:var(--panel-2);border:1px solid var(--border);border-radius:12px;
+    padding:14px 8px;color:var(--text);font-size:.78rem;font-weight:700;
+    cursor:pointer;transition:all .2s;text-align:center;line-height:1.3;
+  }
+  .preset:hover,.preset.active{
+    border-color:var(--accent);background:rgba(0,229,160,.08);
+    transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,229,160,.15);
+  }
+  .preset small{display:block;color:var(--muted);font-size:.65rem;font-weight:500;margin-top:4px}
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+  button.act{
+    padding:14px;border-radius:14px;font-weight:800;font-size:.85rem;
+    cursor:pointer;transition:all .2s;border:none;
+    text-transform:uppercase;letter-spacing:.8px;
+  }
+  .save{background:linear-gradient(135deg,var(--accent),#00b37e);color:#02120c}
+  .reset{background:transparent;border:1.5px solid var(--accent-2);color:var(--accent-2)}
+  .save:hover{filter:brightness(1.1);transform:translateY(-1px)}
+  .reset:hover{background:rgba(255,61,90,.1)}
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);
+    background:var(--accent);color:#02120c;padding:12px 24px;border-radius:30px;
+    font-weight:800;font-size:.85rem;transition:transform .35s cubic-bezier(.2,1.2,.4,1);
+    box-shadow:0 8px 24px rgba(0,229,160,.4);z-index:99;
+  }
+  .toast.show{transform:translateX(-50%) translateY(0)}
+  footer{color:var(--muted);font-size:.72rem;text-align:center;margin-top:8px;line-height:1.6}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  @keyframes fadeDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>MINH TRIẾT SETUP</h1>
+    <p>Free Fire Sensitivity Tuner</p>
+  </header>
+
+  <div class="card" id="presetCard">
+    <h2>Preset nhanh</h2>
+    <div class="presets" id="presets"></div>
+  </div>
+
+  <div class="card" id="sliderCard">
+    <h2>Chỉnh chi tiết</h2>
+    <div id="sliders"></div>
+  </div>
+
+  <div class="actions">
+    <button class="act save" id="saveBtn">Lưu Setup</button>
+    <button class="act reset" id="resetBtn">Reset</button>
+  </div>
+
+  <footer>
+    Setup được lưu tự động trong trình duyệt.<br>
+    Sensitivity tối ưu tuỳ thiết bị — tinh chỉnh theo cảm giác tay.
+  </footer>
+</div>
+<div class="toast" id="toast">Đã lưu!</div>
+
+<script>
+(function(){
+  'use strict';
+
+  const STORAGE_KEY = 'minhtriet_ff_sens_v1';
+
+  const FIELDS = [
+    { key:'general',    label:'General',         min:0, max:200, def:100 },
+    { key:'redDot',     label:'Red Dot',         min:0, max:200, def:100 },
+    { key:'x2Scope',    label:'2x Scope',        min:0, max:200, def:100 },
+    { key:'x4Scope',    label:'4x Scope',        min:0, max:200, def:95  },
+    { key:'sniper',     label:'Sniper Scope',    min:0, max:200, def:80  },
+    { key:'freeLook',   label:'Free Look',       min:0, max:200, def:100 },
+    { key:'dpi',        label:'DPI',             min:0, max:200, def:100 },
+  ];
+
+  const PRESETS = {
+    low:    { name:'Low Sens',  sub:'Ổn định',   values:{general:85,redDot:85,x2Scope:85,x4Scope:80,sniper:70,freeLook:90,dpi:95} },
+    medium: { name:'Balanced',  sub:'Cân bằng',  values:{general:100,redDot:100,x2Scope:100,x4Scope:95,sniper:80,freeLook:100,dpi:100} },
+    high:   { name:'High Sens', sub:'Nhanh gọn', values:{general:150,redDot:140,x2Scope:130,x4Scope:120,sniper:100,freeLook:150,dpi:120} },
+  };
+
+  const DEFAULT = Object.fromEntries(FIELDS.map(f => [f.key, f.def]));
+
+  const state = { values: { ...DEFAULT }, activePreset: null };
+  const $ = sel => document.querySelector(sel);
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return;
+      const parsed = JSON.parse(raw);
+      FIELDS.forEach(f=>{
+        if(typeof parsed.values?.[f.key] === 'number'){
+          state.values[f.key] = clamp(parsed.values[f.key], f.min, f.max);
+        }
+      });
+      state.activePreset = parsed.activePreset || null;
+    }catch(e){ /* corrupted storage, ignore */ }
+  }
+
+  function save(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }catch(e){ console.warn('storage failed', e); }
+  }
+
+  const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+
+  function paintRange(input){
+    const min = +input.min, max = +input.max, val = +input.value;
+    const pct = ((val - min) / (max - min)) * 100;
+    input.style.setProperty('--pct', pct + '%');
+  }
+
+  function buildPresets(){
+    const host = $('#presets');
+    host.innerHTML = '';
+    Object.entries(PRESETS).forEach(([id,p])=>{
+      const btn = document.createElement('button');
+      btn.className = 'preset' + (state.activePreset === id ? ' active' : '');
+      btn.dataset.preset = id;
+      btn.innerHTML = `${p.name}<small>${p.sub}</small>`;
+      btn.addEventListener('click', () => applyPreset(id));
+      host.appendChild(btn);
+    });
+  }
+
+  function buildSliders(){
+    const host = $('#sliders');
+    host.innerHTML = '';
+    FIELDS.forEach((f, idx) => {
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.style.animation = `fadeUp .4s ease ${idx*0.04}s both`;
+
+      const head = document.createElement('div');
+      head.className = 'row-head';
+      const label = document.createElement('span');
+      label.textContent = f.label;
+      const val = document.createElement('span');
+      val.className = 'val';
+      val.id = 'val-' + f.key;
+      val.textContent = state.values[f.key];
+      head.append(label, val);
+
+      const input = document.createElement('input');
+      input.type = 'range';
+      input.min = f.min; input.max = f.max;
+      input.value = state.values[f.key];
+      input.id = 'slider-' + f.key;
+      paintRange(input);
+
+      input.addEventListener('input', () => {
+        const v = +input.value;
+        state.values[f.key] = v;
+        val.textContent = v;
+        paintRange(input);
+        state.activePreset = null;
+        refreshPresetHighlight();
+      });
+
+      row.append(head, input);
+      host.appendChild(row);
+    });
+  }
+
+  function refreshPresetHighlight(){
+    document.querySelectorAll('.preset').forEach(b=>{
+      b.classList.toggle('active', b.dataset.preset === state.activePreset);
+    });
+  }
+
+  function applyPreset(id){
+    const p = PRESETS[id];
+    if(!p) return;
+    Object.assign(state.values, p.values);
+    state.activePreset = id;
+    syncUI();
+    save();
+    toast('Preset: ' + p.name);
+  }
+
+  function syncUI(){
+    FIELDS.forEach(f=>{
+      const input = document.getElementById('slider-' + f.key);
+      const val = document.getElementById('val-' + f.key);
+      if(input){ input.value = state.values[f.key]; paintRange(input); }
+      if(val){ val.textContent = state.values[f.key]; }
+    });
+    refreshPresetHighlight();
+  }
+
+  let toastTimer;
+  function toast(msg){
+    const t = $('#toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>t.classList.remove('show'), 1800);
+  }
+
+  function reset(){
+    Object.assign(state.values, DEFAULT);
+    state.activePreset = null;
+    syncUI();
+    save();
+    toast('Đã reset về mặc định');
+  }
+
+  $('#saveBtn').addEventListener('click', ()=>{ save(); toast('Đã lưu setup!'); });
+  $('#resetBtn').addEventListener('click', reset);
+
+  load();
+  buildPresets();
+  buildSliders();
+  syncUI();
+
+  if(!localStorage.getItem(STORAGE_KEY)) save();
+})();
+</script>
+</body>
+</html>
